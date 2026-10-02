@@ -17,19 +17,19 @@ pipeline {
 
         stage('Restore') {
             steps {
-                bat 'dotnet restore'
+                bat 'docker run --rm -v "%WORKSPACE%:/src" -w /src mcr.microsoft.com/dotnet/sdk:8.0 dotnet restore'
             }
         }
 
         stage('Build') {
             steps {
-                bat 'dotnet build --configuration Release --no-restore'
+                bat 'docker run --rm -v "%WORKSPACE%:/src" -w /src mcr.microsoft.com/dotnet/sdk:8.0 dotnet build --configuration Release --no-restore'
             }
         }
 
         stage('Test') {
             steps {
-                bat 'dotnet test --configuration Release --no-build'
+                bat 'docker run --rm -v "%WORKSPACE%:/src" -w /src mcr.microsoft.com/dotnet/sdk:8.0 dotnet test --configuration Release --no-build'
             }
         }
 
@@ -49,7 +49,6 @@ pipeline {
                         passwordVariable: 'DOCKER_PASSWORD'
                     )
                 ]) {
-
                     bat '''
                         echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
                         docker push %DOCKER_IMAGE%:%DOCKER_TAG%
@@ -61,10 +60,8 @@ pipeline {
     }
 
     post {
-
         success {
             echo 'OrderService CI/CD pipeline completed successfully.'
-            echo "Docker image: %DOCKER_IMAGE%:%DOCKER_TAG%"
         }
 
         failure {
