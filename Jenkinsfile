@@ -15,21 +15,15 @@ pipeline {
             }
         }
 
-        stage('Restore') {
+        stage('Build and Test') {
             steps {
-                bat 'docker run --rm -v "%WORKSPACE%:/src" -w /src mcr.microsoft.com/dotnet/sdk:8.0 dotnet restore'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                bat 'docker run --rm -v "%WORKSPACE%:/src" -w /src mcr.microsoft.com/dotnet/sdk:8.0 dotnet build --configuration Release --no-restore'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                bat 'docker run --rm -v "%WORKSPACE%:/src" -w /src mcr.microsoft.com/dotnet/sdk:8.0 dotnet test --configuration Release --no-build'
+                bat '''
+                docker run --rm ^
+                  -v "%WORKSPACE%:/src" ^
+                  -w /src ^
+                  mcr.microsoft.com/dotnet/sdk:8.0 ^
+                  sh -c "dotnet restore && dotnet build --configuration Release && dotnet test --configuration Release --no-build"
+                '''
             }
         }
 
