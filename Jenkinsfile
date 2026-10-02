@@ -20,6 +20,8 @@ pipeline {
                 bat '''
                 docker run --rm ^
                   -v "%WORKSPACE%:/src" ^
+                  -v orderservice_obj:/src/obj ^
+                  -v orderservice_bin:/src/bin ^
                   -w /src ^
                   mcr.microsoft.com/dotnet/sdk:8.0 ^
                   sh -c "dotnet restore && dotnet build --configuration Release && dotnet test --configuration Release --no-build"
@@ -56,6 +58,7 @@ pipeline {
     post {
         success {
             echo 'OrderService CI/CD pipeline completed successfully.'
+            echo "Docker image: %DOCKER_IMAGE%:%DOCKER_TAG%"
         }
 
         failure {
